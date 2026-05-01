@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DEMO S.O.S. Rural - Conexión Vital</title>
+    <link href="[https://fonts.googleapis.com/css2?family=Urbanist:wght@700&display=swap](https://fonts.googleapis.com/css2?family=Urbanist:wght@700&display=swap)" rel="stylesheet">
+    <link rel="stylesheet" href="[https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css](https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css)">
+    
+    <style>
+        :root {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --blue-action: #2196F3;
+            --red-emergency: #f44336;
+            --green-nfc: #deff9a;
+            --text-main: #ffffff;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Urbanist', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            overflow: hidden;
+        }
+
+        .device-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .nfc-bar {
+            background-color: var(--card-bg);
+            border: 3px dashed #444;
+            border-radius: 20px;
+            padding: 15px;
+            text-align: center;
+            margin-bottom: 20px;
+            transition: all 0.5s;
+        }
+
+        .nfc-bar.active {
+            border-color: var(--green-nfc);
+            background-color: rgba(222, 255, 154, 0.1);
+        }
+
+        .nfc-bar h2 {
+            margin: 0;
+            font-size: 24px;
+            color: #aaa;
+        }
+
+        .nfc-bar.active h2 {
+            color: var(--green-nfc);
+        }
+
+        .actions-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            flex-grow: 1;
+        }
+
+        .btn-main {
+            border: none;
+            border-radius: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.1s;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+
+        .btn-main:active { transform: scale(0.95); }
+        .btn-malaise { background-color: var(--blue-action); color: white; }
+        .btn-emergency { background-color: var(--red-emergency); color: white; }
+
+        .btn-main i { font-size: 100px; margin-bottom: 20px; }
+        .btn-main span { font-size: 30px; text-transform: uppercase; font-weight: 700; }
+
+        #voice-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        #doctor-dashboard {
+            position: fixed;
+            bottom: 20px; right: 20px; width: 320px;
+            background: #fff; color: #000;
+            border-radius: 20px; padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            display: none; z-index: 200;
+        }
+
+        .debug-panel { position: fixed; top: 10px; right: 10px; z-index: 300; }
+        .btn-debug { background: #444; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div class="debug-panel">
+        <button class="btn-debug" onclick="simulateNFC()">SIMULAR TARJETA NFC</button>
+    </div>
+
+    <div class="device-container">
+        <div id="nfc-bar" class="nfc-bar">
+            <h2 id="nfc-text"><i class="fa-solid fa-rss"></i> ACERQUE SU TARJETA</h2>
+        </div>
+
+        <div class="actions-grid">
+            <button class="btn-main btn-malaise" onclick="handleMalaise()">
+                <i class="fa-solid fa-comment-medical"></i>
+                <span>Me siento mal</span>
+            </button>
+            <button class="btn-main btn-emergency" onclick="handleEmergency()">
+                <i class="fa-solid fa-truck-medical"></i>
+                <span>Emergencia</span>
+            </button>
+        </div>
+    </div>
+
+    <div id="voice-overlay">
+        <h1 style="color: var(--blue-action);">ESCUCHANDO...</h1>
+        <p id="transcript-text" style="font-size: 25px; color: #fff; text-align: center;"></p>
+        <button onclick="closeVoice()" style="color: white; background: none; border: 1px solid white; padding: 10px 20px; margin-top: 20px;">CERRAR</button>
+    </div>
+
+    <div id="doctor-dashboard">
+        <h3 style="color: red;">ALERTA RECIBIDA</h3>
+        <p><strong>Paciente:</strong> <span id="dash-name"></span></p>
+        <p><strong>Sintomas:</strong> <span id="dash-symptoms"></span></p>
+    </div>
+
+    <script>
+        let patientData = null;
+
+        function simulateNFC() {
+            patientData = { name: "José Martínez", history: "Hipertenso" };
+            document.getElementById('nfc-bar').classList.add('active');
+            document.getElementById('nfc-text').innerHTML = "HOLA, DON JOSÉ";
+            speak("Información cargada");
+        }
+
+        function handleEmergency() {
+            if(!patientData) { alert("Use el botón gris para simular NFC"); return; }
+            document.getElementById('doctor-dashboard').style.display = 'block';
+            document.getElementById('dash-name').innerText = patientData.name;
+            document.getElementById('dash-symptoms').innerText = "EMERGENCIA CRÍTICA";
+            speak("Alerta enviada");
+        }
+
+        function handleMalaise() {
+            if(!patientData) { alert("Use el botón gris para simular NFC"); return; }
+            document.getElementById('voice-overlay').style.display = 'flex';
+            startVoice();
+        }
+
+        function startVoice() {
+            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.lang = 'es-ES';
+            recognition.onresult = (event) => {
+                const text = event.results[0][0].transcript;
+                document.getElementById('transcript-text').innerText = text;
+                document.getElementById('doctor-dashboard').style.display = 'block';
+                document.getElementById('dash-name').innerText = patientData.name;
+                document.getElementById('dash-symptoms').innerText = text;
+                speak("Enviado al doctor");
+                setTimeout(closeVoice, 3000);
+            };
+            recognition.start();
+        }
+
+        function closeVoice() { document.getElementById('voice-overlay').style.display = 'none'; }
+        function speak(m) { window.speechSynthesis.speak(new SpeechSynthesisUtterance(m)); }
+    </script>
+</body>
+</html>
