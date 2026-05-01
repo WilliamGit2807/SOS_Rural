@@ -10,15 +10,17 @@
             --primary: #2196F3;
             --danger: #f44336;
             --dark-bg: #0f172a;
-            --card-bg: #ffffff;
-            --text-dark: #1e293b;
+            --card-bg: #1e293b;
+            --text-light: #f8fafc;
+            --accent: #deff9a;
         }
 
         body {
             margin: 0; padding: 0;
             font-family: 'Urbanist', sans-serif;
-            background-color: #f1f5f9;
+            background-color: #020617;
             display: flex; height: 100vh; overflow: hidden;
+            color: var(--text-light);
         }
 
         /* --- SIDEBAR --- */
@@ -26,17 +28,25 @@
             width: 280px; background-color: var(--dark-bg);
             color: white; padding: 30px 20px;
             display: flex; flex-direction: column;
+            border-right: 1px solid #334155;
         }
 
-        .sidebar h2 { color: #deff9a; margin-bottom: 40px; border-bottom: 1px solid #334155; padding-bottom: 10px; }
+        .sidebar h2 { 
+            color: var(--accent); 
+            margin-bottom: 40px; 
+            border-bottom: 1px solid #334155; 
+            padding-bottom: 10px;
+            font-size: 24px;
+        }
 
         .nav-item {
             padding: 15px; border-radius: 12px; margin-bottom: 10px;
             cursor: pointer; transition: 0.3s; font-weight: 500;
+            color: #94a3b8;
         }
 
-        .nav-item:hover { background-color: #1e293b; }
-        .nav-item.active { background-color: var(--primary); }
+        .nav-item:hover { background-color: #1e293b; color: white; }
+        .nav-item.active { background-color: var(--primary); color: white; }
 
         /* --- CONTENIDO --- */
         .content { flex-grow: 1; padding: 40px; position: relative; overflow-y: auto; }
@@ -44,35 +54,50 @@
         .view-section { display: none; animation: fadeIn 0.5s ease; }
         .view-section.active { display: block; }
 
+        h1 { font-size: 32px; margin-bottom: 10px; color: white; }
+        p { color: #94a3b8; margin-bottom: 30px; }
+
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         /* --- ESTILOS DEL MAPA --- */
         .map-container {
             width: 100%; height: 500px;
-            background-color: #e2e8f0;
-            border-radius: 20px; overflow: hidden;
-            border: 4px solid white; box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            background-color: #1e293b;
+            border-radius: 24px; overflow: hidden;
+            border: 1px solid #334155; 
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
         }
 
-        .map-placeholder {
-            width: 100%; height: 100%;
-            display: flex; align-items: center; justify-content: center;
-            background-image: url('https://www.google.com/maps/d/u/0/thumbnail?mid=1vX6E8Y5u9vWzQx8y9UjGzO_fX_Y'); /* Imagen de mapa rural */
-            background-size: cover; background-position: center;
-        }
-
-        /* --- ALERTAS --- */
+        /* --- TARJETAS Y TABLAS --- */
         .alert-card {
-            background: white; border-radius: 20px; padding: 25px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            background: var(--card-bg); border-radius: 20px; padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
             border-left: 8px solid var(--danger); margin-bottom: 20px;
+            animation: slideIn 0.4s ease-out;
         }
+
+        @keyframes slideIn { from { transform: translateX(20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        .status-pill {
+            padding: 15px; border-radius: 15px; font-weight: 600;
+            background: #0f172a; border: 1px solid #334155;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            transition: 0.3s;
+        }
+        .status-pill:hover { border-color: var(--primary); background: #1e293b; }
+
+        table { width: 100%; background: var(--card-bg); border-radius: 15px; overflow: hidden; border-collapse: collapse; }
+        th { background: #334155; color: var(--accent); padding: 15px; text-align: left; }
+        td { padding: 15px; border-bottom: 1px solid #334155; color: var(--text-light); }
 
         .simulate-btn {
             position: fixed; bottom: 20px; right: 20px;
-            background: #334155; color: white; border: none;
-            padding: 10px; border-radius: 5px; cursor: pointer; opacity: 0.5;
+            background: #deff9a; color: #020617; border: none;
+            padding: 12px 20px; border-radius: 10px; cursor: pointer; 
+            font-weight: 700; font-family: 'Urbanist'; transition: 0.3s;
+            z-index: 1000;
         }
+        .simulate-btn:hover { transform: scale(1.05); background: white; }
     </style>
 </head>
 <body>
@@ -88,83 +113,129 @@
         
         <div id="section-alertas" class="view-section active">
             <h1>Alertas Recientes</h1>
+            <p>Monitoreo de emergencias en tiempo real desde las veredas.</p>
             <div id="alerts-container">
-                <p>No hay emergencias activas.</p>
+                <div style="text-align: center; padding: 50px; color: #475569;">
+                    <span style="font-size: 50px;">📡</span>
+                    <p>Escaneando frecuencias... No hay emergencias activas.</p>
+                </div>
             </div>
         </div>
 
         <div id="section-mapa" class="view-section">
             <h1>Mapa de Cobertura Veredal</h1>
-            <p>Ubicación en tiempo real de las terminales SOS y fincas registradas.</p>
+            <p>Haz clic en las fincas inferiores para centrar el GPS.</p>
             
             <div class="map-container">
                 <iframe 
-                    src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d15907.447547146524!2d-74.08!3d4.60!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1ses!2sco!4v1700000000000!5m2!1ses!2sco" 
-                    width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy">
+                    id="mapa-frame"
+                    src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d15907.3444458316!2d-74.05!3d4.65!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e1!3m2!1ses!2sco!4v1714570000000!5m2!1ses!2sco" 
+                    width="100%" height="100%" style="border:0; filter: invert(90%) hue-rotate(180deg) brightness(95%);" 
+                    allowfullscreen="" loading="lazy">
                 </iframe>
             </div>
             
-            <div style="margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
-                <div style="background: white; padding: 15px; border-radius: 10px;">🟢 Finca #1 - Conectado</div>
-                <div style="background: white; padding: 15px; border-radius: 10px;">🟢 Finca #4 - Conectado</div>
-                <div style="background: white; padding: 15px; border-radius: 10px;">🔴 Finca #9 - Sin Señal</div>
+            <div style="margin-top: 30px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
+                <div class="status-pill" onclick="irAFinca('finca1')" style="cursor:pointer;">
+                    <span style="color:#4caf50">●</span> Finca #1 - Online
+                </div>
+                <div class="status-pill" onclick="irAFinca('finca4')" style="cursor:pointer;">
+                    <span style="color:#4caf50">●</span> Finca #4 - Online
+                </div>
+                <div class="status-pill" onclick="irAFinca('finca9')" style="cursor:pointer;">
+                    <span style="color:#f44336">●</span> Finca #9 - Offline
+                </div>
             </div>
         </div>
 
         <div id="section-nfc" class="view-section">
             <h1>Base de Datos de Pacientes</h1>
-            <p>Historiales clínicos cargados mediante tecnología NFC.</p>
-            <table style="width: 100%; background: white; border-radius: 10px; padding: 20px; border-collapse: collapse;">
-                <tr style="border-bottom: 1px solid #eee;">
-                    <th style="padding: 10px; text-align: left;">Paciente</th>
-                    <th style="padding: 10px; text-align: left;">Última Alerta</th>
-                </tr>
-                <tr>
-                    <td style="padding: 10px;">José Martínez</td>
-                    <td style="padding: 10px;">Hoy 10:30 AM</td>
-                </tr>
+            <p>Información clínica recuperada de los dispositivos NFC rurales.</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Paciente</th>
+                        <th>Estado Crítico</th>
+                        <th>Última Sincronización</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>José Martínez</td>
+                        <td style="color: var(--danger);">Sí (Hipertensión)</td>
+                        <td>Hoy 10:30 AM</td>
+                    </tr>
+                    <tr>
+                        <td>María Delgado</td>
+                        <td style="color: var(--accent);">No</td>
+                        <td>Ayer 04:15 PM</td>
+                    </tr>
+                </tbody>
             </table>
         </div>
 
     </div>
 
-    <button class="simulate-btn" onclick="receiveAlert()">SIMULAR ALERTA</button>
+    <button class="simulate-btn" onclick="receiveAlert()">SIMULAR ALERTA ENTRANTE</button>
 
     <script>
-        // Función para cambiar entre pestañas del menú
+        // Cambiar entre pestañas
         function showSection(sectionId, element) {
-            // Ocultar todas las secciones
             document.querySelectorAll('.view-section').forEach(section => {
                 section.classList.remove('active');
             });
-            // Quitar clase activa de los botones del menú
             document.querySelectorAll('.nav-item').forEach(item => {
                 item.classList.remove('active');
             });
 
-            // Mostrar la sección seleccionada
             document.getElementById('section-' + sectionId).classList.add('active');
             element.classList.add('active');
+        }
+
+        // Lógica interactiva del Mapa
+        function irAFinca(finca) {
+            const mapa = document.getElementById('mapa-frame');
+            
+            // URLs de Google Maps para diferentes puntos (Ejemplos de zonas rurales)
+            const ubicaciones = {
+                'finca1': "https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d31700.0!2d-74.0!3d4.7!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e1!3m2!1ses!2sco!4v1714570000000",
+                'finca4': "https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d15000.0!2d-73.9!3d4.6!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e1!3m2!1ses!2sco!4v1714570000001",
+                'finca9': "https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d20000.0!2d-74.1!3d4.5!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e1!3m2!1ses!2sco!4v1714570000002"
+            };
+
+            mapa.src = ubicaciones[finca];
         }
 
         // Simulación de alerta
         function receiveAlert() {
             const container = document.getElementById('alerts-container');
+            
+            // Sonido técnico
+            const context = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = context.createOscillator();
+            const gain = context.createGain();
+            osc.connect(gain);
+            gain.connect(context.destination);
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(440, context.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, context.currentTime + 0.8);
+            osc.start(); osc.stop(context.currentTime + 0.8);
+
             container.innerHTML = `
                 <div class="alert-card">
-                    <h2 style="color:red; margin-top:0;">🚨 EMERGENCIA DETECTADA</h2>
-                    <p><strong>Paciente:</strong> Don José Martínez</p>
-                    <p><strong>Ubicación:</strong> Finca #4 (Vereda El Descanso)</p>
-                    <button onclick="showSection('mapa', document.querySelectorAll('.nav-item')[1])" style="background: var(--primary); color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer;">
-                        VER EN MAPA
-                    </button>
+                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                        <div>
+                            <h2 style="color:var(--danger); margin:0; font-size: 24px;">🚨 EMERGENCIA DETECTADA</h2>
+                            <p style="color: white; margin: 10px 0;"><strong>Paciente:</strong> Don José Martínez</p>
+                            <p style="color: white; margin: 5px 0;"><strong>Ubicación:</strong> Finca #4 (Vereda El Descanso)</p>
+                        </div>
+                        <button onclick="irAFinca('finca4'); showSection('mapa', document.querySelectorAll('.nav-item')[1])" 
+                                style="background: var(--primary); color: white; border: none; padding: 12px 20px; border-radius: 10px; cursor: pointer; font-weight: 700;">
+                            RASTREAR GPS
+                        </button>
+                    </div>
                 </div>
-            `;
-            // Sonido
-            const context = new AudioContext();
-            const osc = context.createOscillator();
-            osc.connect(context.destination);
-            osc.start(); osc.stop(context.currentTime + 0.5);
+            ` + (container.innerHTML.includes('Escaneando') ? '' : container.innerHTML);
         }
     </script>
 </body>
